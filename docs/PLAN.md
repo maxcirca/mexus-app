@@ -26,7 +26,7 @@ Goal: repo, tooling and the spec are in place; screens agreed.
       user-entered).
 - [ ] `scripts/sync-schema`: Notion → `packages/schema/schema.json`, validated
       by zod; committed.
-- [ ] **Wireframes on a shared Miro board**: Home, Morning, Midday, Evening,
+- [ ] **Wireframes on the Miro board "Mexus"** (https://miro.com/app/board/uXjVHP8r888=/, architecture drawn there 2026-11-14): Home, Morning, Midday, Evening,
       History/charts, Settings. Low-fidelity; Max edits directly, Claude
       redraws from the schema. Agreed before Phase 2's UI work.
 
