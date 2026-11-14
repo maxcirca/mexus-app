@@ -220,9 +220,13 @@ not migrated.
 
 ## Open questions
 
-1. **Notion access.** The Notion connector in the planning session couldn't
-   find the "Mexus Items" page; it may be connected to a different workspace.
-   Needed before Phase 0's schema sync.
+1. ~~**Notion access.**~~ Resolved 2026-11-14: "Mexus Items" was rebuilt in
+   the **Ember** workspace (the one the Notion connector reaches) from the
+   Appsmith app's field definitions. Page `418e5f748fe981a4ada7d834558d02bf`;
+   data sources Morning `collection://418e5f74-8fe9-81f1-a3e3-000b9997d942`,
+   Midday `collection://418e5f74-8fe9-810d-b968-000b148ea1e6`, Evening
+   `collection://418e5f74-8fe9-817b-ace8-000b642ba444`. The original page in
+   the other workspace is no longer the source of truth.
 2. **Midday/Evening fields.** Do the Notion databases for those exist yet, or
    are they still to be designed (in the wireframing step)?
 3. **Domain.** Where the web app and API live (e.g. subdomains of

@@ -16,10 +16,12 @@ Goal: repo, tooling and the spec are in place; screens agreed.
 - [ ] pnpm monorepo: `apps/app` (Expo), `apps/api` (Hono), `apps/ingest`,
       `packages/schema`, `scripts/`. TypeScript strict, ESLint, Prettier, Vitest.
 - [ ] CI (GitHub Actions): typecheck, lint, test on every push.
-- [ ] Notion access confirmed from a session; Midday/Evening databases exist
-      with the same columns as Morning (`Key`, `Type`, `Widget`, `Order`,
-      `Width`, `Min`/`Max`/`Step`, `Marks`, `Options`, `Default`).
-- [ ] Add the Notion columns the new design needs: default kind
+- [x] Notion "Mexus Items" rebuilt in the Ember workspace: Morning filled,
+      Midday/Evening created empty with the same columns (`Key`, `Type`,
+      `Widget`, `Order`, `Width`, `Min`/`Max`/`Step`, `Marks`, `Options`,
+      `Default`).
+- [ ] Midday/Evening fields defined in Notion.
+- [x] Add the Notion columns the new design needs: default kind
       (`previous`/`static`/`now`), `Visible when`, `Auto` (captured, not
       user-entered).
 - [ ] `scripts/sync-schema`: Notion → `packages/schema/schema.json`, validated
