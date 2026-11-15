@@ -15,7 +15,12 @@ Goal: repo, tooling and the spec are in place; screens agreed.
 
 - [ ] pnpm monorepo: `apps/app` (Expo), `apps/api` (Hono), `apps/ingest`,
       `packages/schema`, `scripts/`. TypeScript strict, ESLint, Prettier, Vitest.
-- [ ] CI (GitHub Actions): typecheck, lint, test on every push.
+- [x] Workflow decided: pull request + preview + Max merges (ADR-008);
+      `main` created as the production branch.
+- [ ] `main` set as the default branch and protected on GitHub (Max, in repo
+      settings).
+- [ ] CI (GitHub Actions): typecheck, lint, test on every pull request.
+- [ ] Dev container so the repo opens ready to run in GitHub Codespaces.
 - [x] Notion "Mexus Items" rebuilt in the Ember workspace: Morning filled,
       Midday/Evening created empty with the same columns (`Key`, `Type`,
       `Widget`, `Order`, `Width`, `Min`/`Max`/`Step`, `Marks`, `Options`,

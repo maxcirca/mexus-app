@@ -206,6 +206,29 @@ record id/day, so re-fetching overlapping windows is idempotent. Read with
 `FINAL` (cheap at this size). Starts fresh; the Supabase `oura_*` tables are
 not migrated.
 
+## ADR-008 — Changes reach production through an approved pull request
+
+**Context.** Code is written in Claude Code sessions in the Claude app and
+pushed to GitHub. Max reviews by using the app, not by reading code. A
+change must not reach the app in daily use before he has seen it.
+
+**Decision.** `main` is production. Every change (Claude's, a Notion schema
+sync, or a manual edit) goes on a branch and becomes a pull request. Each
+pull request gets automatic checks and a preview (a test copy of the API and
+database, a web link, and the "Mexus Preview" Android app). Max tries the
+preview and presses Merge on GitHub; merging deploys to production
+automatically (Railway, web, Android update).
+
+**Consequences.**
+- One tap per change for Max; production only ever runs reviewed code.
+- No direct pushes to `main`; branch protection enforces it once CI exists.
+- Manual editing, when needed, uses GitHub Codespaces (VS Code in the
+  browser, preconfigured by a dev container) or VS Code / Cursor locally,
+  and follows the same pull-request route.
+- Hosting: Railway runs ClickHouse, the API, the ingest job and the web app;
+  Expo (EAS) builds and updates the Android app; backups go to a separate
+  S3-compatible bucket.
+
 ## Cross-cutting conventions
 
 - **Build stamp.** The app shows the git SHA + build time (injected at build)
