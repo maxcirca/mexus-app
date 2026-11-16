@@ -14,6 +14,22 @@ The same plan is drawn on the Miro board "Mexus"
 
 Status key: ⏳ not started · 🚧 in progress · ✅ done
 
+## Current status
+
+*Updated at the end of every session.* Last update: 2026-11-16, end of Day 1.
+
+- **Day 1 done.** Every service connected and tested: GitHub, Railway
+  (project "Mexus", empty), Expo, Cloudflare (R2 enabled, no bucket yet),
+  Notion, Miro. DNS for `boit.net` is at all-inkl.com, no connector; Max
+  adds records on Day 3. Oura taken out of scope.
+- **Planning docs on `main`** via pull request #1, merged by Max.
+- **Open for Max before Day 2** (needs the GitHub website, not the mobile app):
+  1. Settings → General → Default branch → `main`, confirm the dialog.
+  2. Branches page → delete `claude/inspiring-tesla-7ttr2d` (only possible
+     once it's no longer the default).
+  3. Optional: Settings → General → "Automatically delete head branches".
+- **Next: Day 2, repository foundations** (see Stage 1).
+
 ## Done before Day 1 ✅
 
 - Architecture decided and documented (`docs/ARCHITECTURE.md`, ADR-001 to 008).
@@ -23,7 +39,7 @@ Status key: ⏳ not started · 🚧 in progress · ✅ done
 - Workflow: pull request, preview, Max merges (ADR-008); environments
   (ADR-009); one repository (ADR-010); AGENTS.md as single source of truth.
 
-## Stage 1 — Pipeline and connections, then Hello World ⏳
+## Stage 1 — Pipeline and connections, then Hello World 🚧
 
 Goal, in two halves. **Days 1–5:** every service subscribed, every connector
 working, the pipeline standing, staging live, so that Claude can act on
@@ -33,7 +49,7 @@ travels the whole pipeline to the phone and the browser.
 
 | Day | Session | Max checks |
 |---|---|---|
-| 1 | **Accounts and connectors.** Max subscribes/creates and connects (list below); Claude tests every connector with a harmless action and records the result in `docs/ACCESS.md` | Every row in the access map is green |
+| 1 ✅ | **Accounts and connectors.** Max subscribes/creates and connects (list below); Claude tests every connector with a harmless action and records the result in `docs/ACCESS.md` | Every row in the access map is green |
 | 2 | **Repository foundations.** AGENTS.md, code project with one folder per service, automatic checks on every pull request, `main` protected, Codespaces setup | First pull request with green checks, merged by Max; a direct push to `main` is refused |
 | 3 | **Railway staging.** Staging environment with ClickHouse (persistent volume), empty API and web services, staging URLs, variables; the environment pattern from ADR-009 | Both staging links answer and show "staging" |
 | 4 | **Expo.** Expo project, `staging` and `preview` channels, first "Mexus Staging" Android build installed | The app is on the phone and shows "staging" |
