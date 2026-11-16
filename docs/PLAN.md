@@ -4,10 +4,10 @@
 himself, usually a pull request to try and merge. If a session doesn't
 finish, the next one continues it: the dates shift, the checks don't.
 
-The first stage is a **proof of concept**: the full pipeline and
-infrastructure with an almost empty app, to prove that a change made in a
-session reliably ends up on the phone and in the browser before any real
-features are built on top.
+The first stage makes sure the pipeline stands and every service is
+subscribed and connected, then sends a Hello World app through it, before
+any real features are built. Everything runs on **staging** first;
+**production** is added when Morning is ready for daily use (ADR-009).
 
 The same plan is drawn on the Miro board "Mexus"
 (https://miro.com/app/board/uXjVHP8r888=/), frame "Project plan".
@@ -20,41 +20,41 @@ Status key: ⏳ not started · 🚧 in progress · ✅ done
 - Architecture drawn on the Miro board.
 - Notion "Mexus Items" rebuilt in the Ember workspace: Morning filled,
   Midday/Evening empty with the same columns.
-- `main` branch created as production; workflow: pull request, preview, Max
-  merges (ADR-008).
+- Workflow: pull request, preview, Max merges (ADR-008); environments
+  (ADR-009); one repository (ADR-010); AGENTS.md as single source of truth.
 
-## Accounts Max sets up first
+## Stage 1 — Pipeline and connections, then Hello World ⏳
 
-| When | What |
-|---|---|
-| Before Day 1 | GitHub: make `main` the default branch |
-| Before Day 2 | Railway: plan that allows an always-on database and preview environments (likely Hobby) |
-| Before Day 4 | Expo: free account at expo.dev, Expo connector connected in claude.ai |
-| Before Day 6 | Cloudflare: free account (R2 storage for backups) |
-| Before Day 9 | Notion: internal integration with access to Mexus Items |
-| Before Day 3 (optional) | DNS access for `newseas.eu` to use `mexus.newseas.eu` |
-
----
-
-## Stage 1 — Proof of concept: pipeline and infrastructure ⏳
-
-Goal: an almost empty Mexus app that shows its build stamp and saves one
-value, running on Android and the web, delivered entirely through the
-pipeline. When this works, every later feature is "just" app work.
+Goal, in two halves. **Days 1–5:** every service subscribed, every connector
+working, the pipeline standing, staging live, so that Claude can act on
+GitHub, Railway, Expo and Cloudflare from a session and Max can see each
+from his own interfaces (`docs/ACCESS.md`). **Days 6–7:** a Hello World app
+travels the whole pipeline to the phone and the browser.
 
 | Day | Session | Max checks |
 |---|---|---|
-| 1 | Code project set up (app, API, shared packages), automatic checks on every pull request, Codespaces setup | The first pull request shows green checks; Max presses Merge |
-| 2 | Railway production: ClickHouse and the API deployed automatically from `main`; `/health` shows build stamp and database status | Opens the API link in a browser and sees "database ok" and today's build stamp |
-| 3 | Web app deployed to Railway: one screen with the Mexus name, build stamp and API status | Opens the web app on the desktop |
-| 4 | Android: first build via Expo, installed on the phone; merges publish updates automatically | Installs the app; after a small merged change, the phone shows it without reinstalling |
-| 5 | Previews: each pull request gets its own Railway copy, a web link, and the Mexus Preview app | Sees a change in the preview before merging, and production unchanged until he merges |
-| 6 | One real value end to end: a Momentum slider that saves to ClickHouse and reloads; nightly backup to R2 | Moves the slider on the phone, sees it on the web, and sees the row in the database |
-| 7 | Hardening: `main` protected (only merges via pull request), tested restore from backup, TablePlus read-only access, runbook in `docs/` | Opens the data in TablePlus; tries to push to `main` directly and is refused |
+| 1 | **Accounts and connectors.** Max subscribes/creates and connects (list below); Claude tests every connector with a harmless action and records the result in `docs/ACCESS.md` | Every row in the access map is green |
+| 2 | **Repository foundations.** AGENTS.md, code project with one folder per service, automatic checks on every pull request, `main` protected, Codespaces setup | First pull request with green checks, merged by Max; a direct push to `main` is refused |
+| 3 | **Railway staging.** Staging environment with ClickHouse (persistent volume), empty API and web services, staging URLs, variables; the environment pattern from ADR-009 | Both staging links answer and show "staging" |
+| 4 | **Expo.** Expo project, `staging` and `preview` channels, first "Mexus Staging" Android build installed | The app is on the phone and shows "staging" |
+| 5 | **Previews and safety.** A preview environment per pull request, nightly backup to R2, TablePlus read-only access | A pull request shows a preview link; a backup file appears in R2; TablePlus opens the database |
+| 6 | **Hello World.** Web and Android show the environment, build stamp and database status; a merged text change reaches both | Change appears on phone and web after Merge, without reinstalling |
+| 7 | **Hello World saves a value.** One slider end to end | Moved on the phone, visible on the web and in TablePlus |
 
-**Milestone: proof of concept done.** A change goes from a session to the
-phone and the browser through checks, preview and Merge, and data is safely
-stored and backed up.
+**Milestone after Day 7:** the whole chain works on staging. Everything
+after is building the app.
+
+### Accounts and connections for Day 1
+
+| What | Max does | Status |
+|---|---|---|
+| GitHub | Make `main` the default branch | to do |
+| Railway | Plan that allows always-on services and preview environments (likely Hobby); decide which of the two "Mexus" projects to use (or delete both and start clean) | connected, plan unchecked |
+| Expo | Free account at expo.dev; connect the Expo connector in claude.ai | to do |
+| Cloudflare | Free account; connect the Cloudflare connector in claude.ai | to do |
+| Domain | Tell Claude where `newseas.eu` DNS is managed; ideally move it to Cloudflare | to do |
+| Notion | Integration token for the automatic sync (can wait until Day 9) | later |
+| Oura | Token for the import (Stage 6) | later |
 
 ## Stage 2 — Fields and screens ⏳
 
@@ -71,7 +71,7 @@ stored and backed up.
 | 11 | Form drawn from the schema: date, time, switches, sliders; autosave and "Saved at" | Fills in part of Morning on the phone |
 | 12 | Remaining field types: select, multi-select, text, per-med dosage, show/hide rules | Every Morning field works |
 | 13 | Defaults and carry-over from the previous day, streak, Home buttons turn green | Next morning the form starts from yesterday's values |
-| 14 | Location captured on first open, shown on a map; polish from a week of feedback | Uses Mexus instead of Appsmith for Morning from here on |
+| 14 | Production environment created from staging (URLs, Mexus app, backups); location and map; polish | Uses Mexus in production instead of Appsmith for Morning from here on |
 
 ## Stage 4 — Midday and Evening ⏳
 
@@ -108,7 +108,7 @@ stored and backed up.
 
 | Risk | Mitigation |
 |---|---|
-| Self-hosted ClickHouse data loss | Nightly backup from Day 6, tested restore on Day 7; ClickHouse Cloud remains an option |
+| Self-hosted ClickHouse data loss | Nightly backup from Day 5, a tested restore before production exists; ClickHouse Cloud remains an option |
 | A pipeline piece doesn't work as expected | That's what Stage 1 is for: found before any feature depends on it |
 | Generic schema-driven form can't express a field's quirk | A custom component per `Widget` value; add the property to Notion rather than special-casing a field |
 | Chart library weak on one platform | Day 18 test before committing |

@@ -206,28 +206,77 @@ record id/day, so re-fetching overlapping windows is idempotent. Read with
 `FINAL` (cheap at this size). Starts fresh; the Supabase `oura_*` tables are
 not migrated.
 
-## ADR-008 — Changes reach production through an approved pull request
+## ADR-008 — Changes reach an environment only through an approved pull request
 
 **Context.** Code is written in Claude Code sessions in the Claude app and
 pushed to GitHub. Max reviews by using the app, not by reading code. A
-change must not reach the app in daily use before he has seen it.
+change must not reach an environment Max relies on before he has seen it.
 
-**Decision.** `main` is production. Every change (Claude's, a Notion schema
-sync, or a manual edit) goes on a branch and becomes a pull request. Each
-pull request gets automatic checks and a preview (a test copy of the API and
-database, a web link, and the "Mexus Preview" Android app). Max tries the
-preview and presses Merge on GitHub; merging deploys to production
-automatically (Railway, web, Android update).
+**Decision.** Every change (Claude's, a Notion schema sync, or a manual edit)
+goes on a branch and becomes a pull request with automatic checks and its
+own preview environment. Max tries the preview and presses Merge. Merging to
+`main` deploys **staging**. Once production exists, a release is a second
+pull request from `main` into the `production` branch, also merged by Max
+(see ADR-009).
 
 **Consequences.**
-- One tap per change for Max; production only ever runs reviewed code.
-- No direct pushes to `main`; branch protection enforces it once CI exists.
-- Manual editing, when needed, uses GitHub Codespaces (VS Code in the
-  browser, preconfigured by a dev container) or VS Code / Cursor locally,
-  and follows the same pull-request route.
-- Hosting: Railway runs ClickHouse, the API, the ingest job and the web app;
-  Expo (EAS) builds and updates the Android app; backups go to a separate
-  S3-compatible bucket.
+- One tap per change, one more per release; no environment runs unreviewed code.
+- No direct pushes to `main` or `production`; branch protection enforces it.
+- Manual editing uses GitHub Codespaces (VS Code in the browser,
+  preconfigured by a dev container) or VS Code / Cursor locally, and follows
+  the same pull-request route.
+
+## ADR-009 — Environments: preview, staging, production; nothing hard-coded
+
+**Context.** Max wants to start on a non-production environment and be able
+to add or switch environments later, each at its own URL.
+
+**Decision.** Three kinds of environment, identical in shape:
+
+| | Preview | Staging | Production |
+|---|---|---|---|
+| Exists | one per open pull request, deleted on merge/close | from the start | added when Morning is ready for daily use |
+| Deploys from | the pull request's branch | `main` | `production` branch |
+| Web | Railway-generated URL | `staging.mexus.newseas.eu` | `mexus.newseas.eu` |
+| API | Railway-generated URL | `api.staging.mexus.newseas.eu` | `api.mexus.newseas.eu` |
+| Android | "Mexus Preview" app, `preview` update channel | "Mexus Staging" app, `staging` channel | "Mexus" app, `production` channel |
+| Database | own ClickHouse, test data | own ClickHouse | own ClickHouse, backed up nightly |
+
+- Each is a **Railway environment** in one Railway project, with the same
+  services (`clickhouse`, `api`, `web`, later `ingest`).
+- **Everything environment-specific is configuration, never code**: URLs,
+  database credentials, the environment name, API tokens live in Railway
+  environment variables, GitHub environment secrets and EAS environment
+  variables. The code reads `MEXUS_ENV` and the configured URLs.
+- The app shows its environment name prominently (except in production), so
+  it's always obvious which one you're looking at.
+- Adding an environment = duplicate the Railway environment, set its
+  variables and domains, add an EAS channel. No code change.
+
+**Consequences.** Staging can hold real use from day one; production is
+created by copying staging's setup, not by building something new.
+
+## ADR-010 — One repository for all services
+
+**Context.** Railway runs several services per environment; the question
+was whether each should have its own repository.
+
+**Decision.** One repository (`maxcirca/mexus-app`) with one folder per
+service. Each Railway service points at its folder ("root directory") and
+only redeploys when files in it, or in the shared packages, change.
+
+**Consequences.**
+- The app and API share types and the schema; one pull request changes both
+  together and gets one preview, so they can never be out of step.
+- One place for AGENTS.md, docs, checks and history.
+- A separate repository only makes sense for something with its own
+  lifecycle, e.g. the later Grafana project.
+
+## Hosting summary
+
+Railway runs ClickHouse, the API, the web app and the ingest job, per
+environment; Expo (EAS) builds and updates the Android apps; backups go to
+Cloudflare R2. How Claude and Max reach each service: `docs/ACCESS.md`.
 
 ## Cross-cutting conventions
 

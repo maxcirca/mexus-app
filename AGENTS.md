@@ -1,18 +1,44 @@
 # Mexus — Personal Metrics Tracker
 
+**This file is the single source of truth for any AI agent or developer
+working in this repository.** Tool-specific files (e.g. `CLAUDE.md`) only
+point here; don't put instructions anywhere else.
+
 Single-user app: a check-in three times a day (Morning "Check-in", Midday
 "Stand-up", Evening "Check-out") plus, later, Oura data and simple charts.
 Successor to the Appsmith app in `maxcirca/appsmith-mexus` (no data migrated).
 
-**Read first:** `docs/ARCHITECTURE.md` (decisions as ADRs) and `docs/PLAN.md`
-(phases, exit criteria, current status). Keep both current: when a decision
-changes, edit its ADR; when work lands, tick it in the plan.
+**Read first:**
+- `docs/ARCHITECTURE.md`: decisions as ADRs.
+- `docs/PLAN.md`: one session a day, current status.
+- `docs/ACCESS.md`: every service, how agents reach it, how Max reaches it.
+
+Keep all three current: when a decision changes, edit its ADR; when work
+lands, tick it in the plan; when access changes, update ACCESS.
+
+Diagrams, plan and wireframes live on the Miro board "Mexus":
+https://miro.com/app/board/uXjVHP8r888=/ — keep it in step with the docs.
 
 ## Stack in one line
 
-Expo (Android + web) → Hono API on Railway → ClickHouse on Railway;
-fields generated from Notion "Mexus Items" into `packages/schema/schema.json`.
-TypeScript everywhere, pnpm monorepo.
+Expo (Android + web) → Hono API → ClickHouse, all on Railway; fields
+generated from Notion "Mexus Items" into `packages/schema/schema.json`.
+TypeScript everywhere, pnpm monorepo, one repository for all services.
+
+## Environments
+
+Preview (one per pull request), staging (`main`), production (`production`
+branch, added later). Nothing environment-specific in code: URLs, credentials
+and the environment name come from configuration (`MEXUS_ENV` etc.).
+Details: ADR-009.
+
+## Workflow
+
+- Never push to `main` or `production`. Work on a branch, open a pull
+  request, Max merges after trying the preview.
+- Max is not reading code: describe changes by what he will see, and give
+  him something concrete to check in each pull request.
+- Bump nothing by hand for the build stamp; it's injected at build time.
 
 ## Rules that came from real bugs in the Appsmith app
 
@@ -25,10 +51,12 @@ TypeScript everywhere, pnpm monorepo.
   read time. A stored, frozen streak went permanently wrong in the old app.
 - **Auto-captured fields (GPS) don't count as "logged".** Opening a page must
   not mark a section done.
-- **Build stamp.** The app and `/health` expose git SHA + build time; check it
-  before concluding a change is or isn't deployed.
+- **Build stamp.** The app and `/health` expose environment, git SHA and
+  build time; check it before concluding a change is or isn't deployed.
 - **Escape free text properly.** Use the ClickHouse client's parameter binding;
   never splice values into SQL strings.
+- **Secrets never go in the repo or the chat.** Railway variables, GitHub
+  secrets, EAS variables; entered by Max through settings or secure forms.
 
 ## Conventions
 

@@ -1,0 +1,31 @@
+# Mexus — Access map
+
+Every service the project uses: what it's for, how an agent (Claude Code in
+the Claude app) reaches it, and how Max reaches it. Same content as the
+"Access map" frame on the Miro board.
+
+Status checked: 2026-11-16.
+
+| Service | Used for | Claude reaches it with | Max uses | Status |
+|---|---|---|---|---|
+| **GitHub** `maxcirca/mexus-app` | Code, pull requests, checks, branch protection, secrets | git in the session (clone, push); GitHub connector (pull requests, checks, comments) | github.com, GitHub mobile app (review, Merge), Codespaces (manual edits) | ✅ connected |
+| **Railway** project "Mexus" | Environments, services (ClickHouse, API, web, ingest), variables, domains, logs | Railway connector (projects, services, variables, domains, deploys, logs) | railway.com dashboard (status, logs, cost) | ✅ connected; ⚠ two projects called "Mexus" exist, one to be chosen |
+| **ClickHouse** (on Railway) | All data | Through Railway (read-only user via TCP proxy) with the ClickHouse client in the session; the app only via the API | TablePlus, read-only login | ⏳ created on Day 3 |
+| **Expo** (EAS) | Android builds and over-the-air updates, per environment channel | Expo connector (builds, updates, status) | expo.dev dashboard; Mexus Staging app on the phone | ❌ connector not connected, account needed |
+| **Cloudflare** | R2 bucket for nightly backups; DNS if the domain is managed there | Cloudflare connector (R2, DNS) | dash.cloudflare.com | ❌ connector not connected, account needed |
+| **Domain** `newseas.eu` | Staging and production URLs | Depends on where DNS is managed (Cloudflare connector if there) | That DNS provider's dashboard | ❓ who manages DNS |
+| **Notion** "Mexus Items" (Ember workspace) | Field definitions | Notion connector (read/edit); the automatic sync job uses its own Notion integration token (GitHub secret) | Notion app | ✅ connector connected; ⏳ integration token for the sync (Day 9) |
+| **Miro** board "Mexus" | Architecture, plan, wireframes | Miro connector | Miro app | ✅ connected |
+| **Oura** | Sleep and readiness data | No connector; the ingest job uses an Oura token stored as a Railway variable | Oura app | ⏳ later (Stage 6) |
+| **Mexus app** itself | The product | Its API and web URLs, for checks | Web: staging URL; Android: Mexus Staging app (production later) | ⏳ Hello World on Day 6 |
+| **Claude app** | Where sessions happen | n/a | Claude app (web, desktop, phone) | ✅ |
+
+## Secrets
+
+Never in the repository and never pasted into the chat. They live in:
+- Railway environment variables (database passwords, API token, Oura token),
+- GitHub repository/environment secrets (Notion token, Expo token for CI),
+- EAS environment variables (API URL per channel).
+
+Max enters them in those settings pages, or through a secure form a session
+opens; agents never see the values.
