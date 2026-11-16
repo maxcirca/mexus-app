@@ -1,110 +1,106 @@
 # Mexus — Project plan
 
-Phased so that something usable exists as early as possible: **Morning
-check-in in daily use by the end of Phase 2**, then Midday/Evening, then
-history, then Oura. Each phase has exit criteria; a phase is done when they
-are met and verified against the real database, not when the code is written.
+**One session a day.** Each session ends with something Max can check
+himself, usually a pull request to try and merge. If a session doesn't
+finish, the next one continues it: the dates shift, the checks don't.
+
+The first stage is a **proof of concept**: the full pipeline and
+infrastructure with an almost empty app, to prove that a change made in a
+session reliably ends up on the phone and in the browser before any real
+features are built on top.
+
+The same plan is drawn on the Miro board "Mexus"
+(https://miro.com/app/board/uXjVHP8r888=/), frame "Project plan".
 
 Status key: ⏳ not started · 🚧 in progress · ✅ done
 
+## Done before Day 1 ✅
+
+- Architecture decided and documented (`docs/ARCHITECTURE.md`, ADR-001 to 008).
+- Architecture drawn on the Miro board.
+- Notion "Mexus Items" rebuilt in the Ember workspace: Morning filled,
+  Midday/Evening empty with the same columns.
+- `main` branch created as production; workflow: pull request, preview, Max
+  merges (ADR-008).
+
+## Accounts Max sets up first
+
+| When | What |
+|---|---|
+| Before Day 1 | GitHub: make `main` the default branch |
+| Before Day 2 | Railway: plan that allows an always-on database and preview environments (likely Hobby) |
+| Before Day 4 | Expo: free account at expo.dev, Expo connector connected in claude.ai |
+| Before Day 6 | Cloudflare: free account (R2 storage for backups) |
+| Before Day 9 | Notion: internal integration with access to Mexus Items |
+| Before Day 3 (optional) | DNS access for `newseas.eu` to use `mexus.newseas.eu` |
+
 ---
 
-## Phase 0 — Foundations ⏳
+## Stage 1 — Proof of concept: pipeline and infrastructure ⏳
 
-Goal: repo, tooling and the spec are in place; screens agreed.
+Goal: an almost empty Mexus app that shows its build stamp and saves one
+value, running on Android and the web, delivered entirely through the
+pipeline. When this works, every later feature is "just" app work.
 
-- [ ] pnpm monorepo: `apps/app` (Expo), `apps/api` (Hono), `apps/ingest`,
-      `packages/schema`, `scripts/`. TypeScript strict, ESLint, Prettier, Vitest.
-- [x] Workflow decided: pull request + preview + Max merges (ADR-008);
-      `main` created as the production branch.
-- [ ] `main` set as the default branch and protected on GitHub (Max, in repo
-      settings).
-- [ ] CI (GitHub Actions): typecheck, lint, test on every pull request.
-- [ ] Dev container so the repo opens ready to run in GitHub Codespaces.
-- [x] Notion "Mexus Items" rebuilt in the Ember workspace: Morning filled,
-      Midday/Evening created empty with the same columns (`Key`, `Type`,
-      `Widget`, `Order`, `Width`, `Min`/`Max`/`Step`, `Marks`, `Options`,
-      `Default`).
-- [ ] Midday/Evening fields defined in Notion.
-- [x] Add the Notion columns the new design needs: default kind
-      (`previous`/`static`/`now`), `Visible when`, `Auto` (captured, not
-      user-entered).
-- [ ] `scripts/sync-schema`: Notion → `packages/schema/schema.json`, validated
-      by zod; committed.
-- [ ] **Wireframes on the Miro board "Mexus"** (https://miro.com/app/board/uXjVHP8r888=/, architecture drawn there 2026-11-14): Home, Morning, Midday, Evening,
-      History/charts, Settings. Low-fidelity; Max edits directly, Claude
-      redraws from the schema. Agreed before Phase 2's UI work.
+| Day | Session | Max checks |
+|---|---|---|
+| 1 | Code project set up (app, API, shared packages), automatic checks on every pull request, Codespaces setup | The first pull request shows green checks; Max presses Merge |
+| 2 | Railway production: ClickHouse and the API deployed automatically from `main`; `/health` shows build stamp and database status | Opens the API link in a browser and sees "database ok" and today's build stamp |
+| 3 | Web app deployed to Railway: one screen with the Mexus name, build stamp and API status | Opens the web app on the desktop |
+| 4 | Android: first build via Expo, installed on the phone; merges publish updates automatically | Installs the app; after a small merged change, the phone shows it without reinstalling |
+| 5 | Previews: each pull request gets its own Railway copy, a web link, and the Mexus Preview app | Sees a change in the preview before merging, and production unchanged until he merges |
+| 6 | One real value end to end: a Momentum slider that saves to ClickHouse and reloads; nightly backup to R2 | Moves the slider on the phone, sees it on the web, and sees the row in the database |
+| 7 | Hardening: `main` protected (only merges via pull request), tested restore from backup, TablePlus read-only access, runbook in `docs/` | Opens the data in TablePlus; tries to push to `main` directly and is refused |
 
-Exit: `pnpm test` green in CI; `schema.json` generated from Notion for all
-three sections; wireframes signed off.
+**Milestone: proof of concept done.** A change goes from a session to the
+phone and the browser through checks, preview and Merge, and data is safely
+stored and backed up.
 
-## Phase 1 — Data spine ⏳
+## Stage 2 — Fields and screens ⏳
 
-Goal: a deployed API that can store and read back observations.
+| Day | Session | Max checks |
+|---|---|---|
+| 8 | Proposal: which new field features to add to Notion (Morning), and first ideas for Midday and Evening | Says yes or no to each proposal; Notion updated |
+| 9 | Automatic Notion sync: a Notion change opens a pull request with the new field list | Edits a label in Notion, sees the pull request appear |
+| 10 | Wireframes on Miro: Home and Morning check-in | Comments on the board until happy |
 
-- [ ] Railway project: `clickhouse` (volume, private), `api` (public).
-- [ ] ClickHouse migrations (plain numbered `.sql` files + a tiny runner):
-      `observations`, `daily_values` view.
-- [ ] API endpoints from ARCHITECTURE ADR-005, bearer-token auth, schema
-      validation on write.
-- [ ] Derived logic in the API with unit tests: latest-value-per-field,
-      previous-day carry-over defaults, streak, logged-today status.
-- [ ] Integration tests against a real ClickHouse (Docker in CI).
-- [ ] Nightly backup to S3-compatible storage + one **tested restore**.
-- [ ] `/health` returns build SHA + time.
+## Stage 3 — Morning check-in in daily use ⏳
 
-Exit: from a script, POST observations, GET the day back, the values and
-streak are right; the rows are visible with a direct ClickHouse query; a
-restore from backup was done once.
+| Day | Session | Max checks |
+|---|---|---|
+| 11 | Form drawn from the schema: date, time, switches, sliders; autosave and "Saved at" | Fills in part of Morning on the phone |
+| 12 | Remaining field types: select, multi-select, text, per-med dosage, show/hide rules | Every Morning field works |
+| 13 | Defaults and carry-over from the previous day, streak, Home buttons turn green | Next morning the form starts from yesterday's values |
+| 14 | Location captured on first open, shown on a map; polish from a week of feedback | Uses Mexus instead of Appsmith for Morning from here on |
 
-## Phase 2 — Morning at parity, in daily use ⏳
+## Stage 4 — Midday and Evening ⏳
 
-Goal: replace the Appsmith Morning check-in.
+| Day | Session | Max checks |
+|---|---|---|
+| 15 | Midday and Evening fields in Notion, wireframes | Signs off fields and screens |
+| 16 | Both sections built (mostly reuse of Morning) | Uses all three check-ins |
+| 17 | Polish and any new field types they need | All three in daily use |
 
-- [ ] Expo app shell: Expo Router, Home with three section buttons (green +
-      `✓` when logged today), settings (API token entry, build stamp).
-- [ ] Generic field renderer driven by `schema.json`: date, time, switch,
-      slider (min/max/step/marks), select, multi-select, text (multi-line),
-      read-only (streak), half/full width, `visibleWhen`.
-- [ ] Autosave: each field change posts one observation (debounced for text);
-      visible "Saved at HH:mm:ss" from the API's response.
-- [ ] Entry date switching loads that day's stored values; defaults follow
-      stored → previous day → static.
-- [ ] GPS captured on first open of a day (`auto` field), shown on a map.
-- [ ] Meds: multi-select with per-med dosage inputs (shape decided in
-      wireframes; dosage carry-over per med).
-- [ ] Web build deployed; Android APK via EAS Build installed on Max's phone.
+## Stage 5 — History and charts ⏳
 
-Exit: Max uses it for Morning for a week instead of Appsmith; every field
-verified to land in ClickHouse by direct query.
+| Day | Session | Max checks |
+|---|---|---|
+| 18 | Test which chart library works well on Android and web | Looks at two sample charts, picks |
+| 19 | Charts per field over time, calendar of logged days | Uses them |
+| 20 | History: browse and edit past days | Uses it |
 
-## Phase 3 — Midday & Evening ⏳
+## Stage 6 — Oura ⏳
 
-- [ ] Fields defined in Notion, synced, wireframes updated.
-- [ ] Any widget types they need that Morning didn't.
-- [ ] Home status covers all three sections.
+| Day | Session | Max checks |
+|---|---|---|
+| 21 | Oura access and scheduled import into ClickHouse, past data backfilled | Sees last month's sleep data in TablePlus |
+| 22 | Oura data next to check-in data in the charts | Uses it |
 
-Exit: all three check-ins in daily use.
+## Later
 
-## Phase 4 — History & in-app charts ⏳
-
-- [ ] Spike: chart library that works on Android **and** web; pick one.
-- [ ] Per-field time series (line / bar), calendar heat-map of logged days,
-      streak history.
-- [ ] Day view: browse and edit past days (already possible via entry date).
-
-## Phase 5 — Oura ingestion ⏳
-
-- [ ] `apps/ingest` on a Railway cron: Oura API v2 → `oura_*` tables
-      (`ReplacingMergeTree`), backfill from first available date.
-- [ ] Oura sleep/readiness alongside check-in data in charts.
-
-## Later / nice to have
-
-- Reminder notifications (morning / midday / evening).
-- Offline entry: queue observations locally, flush when online (the
-  append-only design makes this straightforward: no conflicts, just replay).
-- Health Connect ingestion.
+- Reminder notifications (morning, midday, evening).
+- Offline entry (changes queued on the phone, sent when online).
+- Health Connect import.
 - Grafana (separate project) on the same ClickHouse.
 - Retire `maxcirca/appsmith-mexus` and the Supabase project.
 
@@ -112,7 +108,8 @@ Exit: all three check-ins in daily use.
 
 | Risk | Mitigation |
 |---|---|
-| Self-hosted ClickHouse data loss | Nightly backup + tested restore in Phase 1; Cloud migration path kept open |
-| Generic schema-driven form can't express a field's quirk | Escape hatch: a custom component per `Widget` value; add the property to Notion rather than special-casing a key |
-| Chart library weak on one platform | Phase 4 spike before committing; worst case a web-only chart view |
-| Notion schema change breaks the app | Sync output is committed and validated; nothing reaches the app without a reviewed diff |
+| Self-hosted ClickHouse data loss | Nightly backup from Day 6, tested restore on Day 7; ClickHouse Cloud remains an option |
+| A pipeline piece doesn't work as expected | That's what Stage 1 is for: found before any feature depends on it |
+| Generic schema-driven form can't express a field's quirk | A custom component per `Widget` value; add the property to Notion rather than special-casing a field |
+| Chart library weak on one platform | Day 18 test before committing |
+| Notion change breaks the app | The sync opens a pull request with checks; nothing reaches the app without Merge |
