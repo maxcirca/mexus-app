@@ -54,7 +54,6 @@ after is building the app.
 | Cloudflare | Free account; connect the Cloudflare connector in claude.ai | to do |
 | Domain | `boit.net`, managed by Max: tell Claude which DNS provider; on Day 3 add the records Railway asks for (or Claude does it if the DNS is on Cloudflare) | to do |
 | Notion | Integration token for the automatic sync (can wait until Day 9) | later |
-| Oura | Token for the import (Stage 6) | later |
 
 ## Stage 2 — Fields and screens ⏳
 
@@ -89,18 +88,13 @@ after is building the app.
 | 19 | Charts per field over time, calendar of logged days | Uses them |
 | 20 | History: browse and edit past days | Uses it |
 
-## Stage 6 — Oura ⏳
-
-| Day | Session | Max checks |
-|---|---|---|
-| 21 | Oura access and scheduled import into ClickHouse, past data backfilled | Sees last month's sleep data in TablePlus |
-| 22 | Oura data next to check-in data in the charts | Uses it |
-
 ## Later
+
+- **Oura and other external data (Health Connect): out of scope for now**
+  (decided 2026-11-16). The design keeps room for them (ADR-007).
 
 - Reminder notifications (morning, midday, evening).
 - Offline entry (changes queued on the phone, sent when online).
-- Health Connect import.
 - Grafana (separate project) on the same ClickHouse.
 - Retire `maxcirca/appsmith-mexus` and the Supabase project.
 

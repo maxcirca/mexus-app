@@ -15,9 +15,9 @@ A single-user personal metrics tracker. Its core is a daily check-in done
 | Midday | Stand-up | `mid` |
 | Evening | Check-out | `eve` |
 
-Later it also surfaces non-daily data (Oura ring first, Health Connect
-possibly) and shows simple in-app charts. Heavier dashboards will be a
-separate Grafana project reading the same database.
+It also shows simple in-app charts. Heavier dashboards will be a separate
+Grafana project reading the same database. External data (Oura, Health
+Connect) is out of scope for now (ADR-007).
 
 It replaces the Appsmith + Supabase app (`maxcirca/appsmith-mexus`). Old data
 is **not** migrated.
@@ -33,7 +33,6 @@ is **not** migrated.
           ▼                                  ▼
   apps/app  (Expo: Android + web) ──HTTPS──► apps/api (Hono, Railway)
                                                  │
-  apps/ingest (Oura cron, Railway) ──────────────┤
                                                  ▼
                                         ClickHouse (Railway)
                                                  ▲
@@ -42,10 +41,10 @@ is **not** migrated.
 
 ## ADR-001 — ClickHouse is the only database
 
-**Context.** The data is time series by nature (daily check-ins, Oura sleep/HR
-data) and Max wants Grafana on top of it later; Grafana's ClickHouse support is
-much better suited to this than Postgres. Volume is tiny (a few hundred
-observations/day at most, plus Oura).
+**Context.** The data is time series by nature (daily check-ins, possibly
+wearable data later) and Max wants Grafana on top of it later; Grafana's
+ClickHouse support is much better suited to this than Postgres. Volume is
+tiny (a few hundred observations/day at most).
 
 **Decision.** ClickHouse holds everything. No Postgres alongside it.
 
@@ -182,12 +181,11 @@ unit-testable without a UI, which the Appsmith app never was.
 ## ADR-006 — Hosting: everything on Railway, ClickHouse self-hosted
 
 **Context.** ClickHouse Cloud has no free tier: a 30-day/$300 trial, then
-roughly $66/month minimum on the Basic plan. Usage is minuscule. Railway is
-already where ingestion was going to run.
+roughly $66/month minimum on the Basic plan. Usage is minuscule.
 
-**Decision.** Railway project with three services: `clickhouse` (official
-image + persistent volume, private network only), `api` (public HTTPS),
-`ingest` (cron). The web build is a static site (Railway or Cloudflare Pages).
+**Decision.** One Railway project with three services per environment:
+`clickhouse` (official image + persistent volume, private network only),
+`api` (public HTTPS) and `web` (the static web build).
 
 **Consequences.**
 - Cheap, and one place to look.
@@ -198,13 +196,15 @@ image + persistent volume, private network only), `api` (public HTTPS),
 - Switching to ClickHouse Cloud later is a data copy and a connection string;
   nothing in the design depends on self-hosting.
 
-## ADR-007 — Oura (and later other sources) ingested into their own tables
+## ADR-007 — External data sources (Oura, Health Connect): out of scope for now
 
-**Decision.** `apps/ingest` polls the Oura API on a schedule and writes
-`oura_*` tables using `ReplacingMergeTree(ingested_at)` keyed by Oura's own
-record id/day, so re-fetching overlapping windows is idempotent. Read with
-`FINAL` (cheap at this size). Starts fresh; the Supabase `oura_*` tables are
-not migrated.
+**Status.** Deferred on 2026-11-16 by Max. Nothing is built for them.
+
+**If they come back:** a scheduled `ingest` service per environment writes
+each source into its own tables (`oura_*`, using `ReplacingMergeTree` keyed
+by the source's record id so re-fetching is idempotent), next to the
+check-in data in the same ClickHouse. No other part of the design depends
+on this.
 
 ## ADR-008 — Changes reach an environment only through an approved pull request
 
@@ -243,7 +243,7 @@ to add or switch environments later, each at its own URL.
 | Database | own ClickHouse, test data | own ClickHouse | own ClickHouse, backed up nightly |
 
 - Each is a **Railway environment** in one Railway project, with the same
-  services (`clickhouse`, `api`, `web`, later `ingest`).
+  services (`clickhouse`, `api`, `web`).
 - **Everything environment-specific is configuration, never code**: URLs,
   database credentials, the environment name, API tokens live in Railway
   environment variables, GitHub environment secrets and EAS environment
@@ -274,8 +274,7 @@ only redeploys when files in it, or in the shared packages, change.
 
 ## Hosting summary
 
-Railway runs ClickHouse, the API, the web app and the ingest job, per
-environment; Expo (EAS) builds and updates the Android apps; backups go to
+Railway runs ClickHouse, the API and the web app, per environment; Expo (EAS) builds and updates the Android apps; backups go to
 Cloudflare R2. How Claude and Max reach each service: `docs/ACCESS.md`.
 
 ## Cross-cutting conventions

@@ -5,7 +5,8 @@ working in this repository.** Tool-specific files (e.g. `CLAUDE.md`) only
 point here; don't put instructions anywhere else.
 
 Single-user app: a check-in three times a day (Morning "Check-in", Midday
-"Stand-up", Evening "Check-out") plus, later, Oura data and simple charts.
+"Stand-up", Evening "Check-out") plus simple charts. Oura and other
+external data sources are out of scope for now.
 Successor to the Appsmith app in `maxcirca/appsmith-mexus` (no data migrated).
 
 **Read first:**
