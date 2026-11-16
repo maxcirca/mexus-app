@@ -33,10 +33,27 @@ branch, added later). Nothing environment-specific in code: URLs, credentials
 and the environment name come from configuration (`MEXUS_ENV` etc.).
 Details: ADR-009.
 
+## Start of every session
+
+Before anything else, without being asked, give Max a short update in plain
+language:
+1. **Where we are:** the last completed day and anything left open, from
+   the "Current status" section of `docs/PLAN.md`, checked against reality
+   (merged and open pull requests on GitHub, the default branch, what is
+   running on Railway).
+2. **Today's plan:** the next day's session from `docs/PLAN.md`, what Max
+   will be able to check at the end, and anything he has to do first.
+3. **Blockers:** anything that stops today's work (an account, a setting).
+
+Keep it short. At the end of every session, update "Current status" in
+`docs/PLAN.md` so the next session starts from the truth.
+
 ## Workflow
 
 - Never push to `main` or `production`. Work on a branch, open a pull
   request, Max merges after trying the preview.
+- Use a fresh branch per day (e.g. `day-2-foundations`), never a long-lived
+  one; it is deleted after merging.
 - Max is not reading code: describe changes by what he will see, and give
   him something concrete to check in each pull request.
 - Bump nothing by hand for the build stamp; it's injected at build time.
