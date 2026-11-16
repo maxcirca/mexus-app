@@ -52,7 +52,7 @@ after is building the app.
 | Railway | Plan that allows always-on services and preview environments (likely Hobby); decide which of the two "Mexus" projects to use (or delete both and start clean) | connected, plan unchecked |
 | Expo | Free account at expo.dev; connect the Expo connector in claude.ai | to do |
 | Cloudflare | Free account; connect the Cloudflare connector in claude.ai | to do |
-| Domain | `boit.net`, managed by Max: tell Claude which DNS provider; on Day 3 add the records Railway asks for (or Claude does it if the DNS is on Cloudflare) | to do |
+| Domain | `boit.net` at all-inkl.com, managed by Max; on Day 3 he adds the records Railway asks for | done (records on Day 3) |
 | Notion | Integration token for the automatic sync (can wait until Day 9) | later |
 
 ## Stage 2 — Fields and screens ⏳
