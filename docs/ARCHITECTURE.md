@@ -237,8 +237,8 @@ to add or switch environments later, each at its own URL.
 |---|---|---|---|
 | Exists | one per open pull request, deleted on merge/close | from the start | added when Morning is ready for daily use |
 | Deploys from | the pull request's branch | `main` | `production` branch |
-| Web | Railway-generated URL | `staging.mexus.newseas.eu` | `mexus.newseas.eu` |
-| API | Railway-generated URL | `api.staging.mexus.newseas.eu` | `api.mexus.newseas.eu` |
+| Web | Railway-generated URL | `staging.mexus.boit.net` | `mexus.boit.net` |
+| API | Railway-generated URL | `api.staging.mexus.boit.net` | `api.mexus.boit.net` |
 | Android | "Mexus Preview" app, `preview` update channel | "Mexus Staging" app, `staging` channel | "Mexus" app, `production` channel |
 | Database | own ClickHouse, test data | own ClickHouse | own ClickHouse, backed up nightly |
 
@@ -301,6 +301,7 @@ Cloudflare R2. How Claude and Max reach each service: `docs/ACCESS.md`.
    the other workspace is no longer the source of truth.
 2. **Midday/Evening fields.** Do the Notion databases for those exist yet, or
    are they still to be designed (in the wireframing step)?
-3. **Domain.** Where the web app and API live (e.g. subdomains of
-   `newseas.eu`).
+3. ~~**Domain.**~~ Resolved 2026-11-16: subdomains of `boit.net` (Max manages
+   its DNS), served by Railway custom domains. Expo's own hosting isn't used,
+   so its plan limits on custom domains don't apply.
 4. **Chart library** for native + web (decided by a spike in Phase 4).
