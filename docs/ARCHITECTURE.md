@@ -210,25 +210,36 @@ by the source's record id so re-fetching is idempotent), next to the
 check-in data in the same ClickHouse. No other part of the design depends
 on this.
 
-## ADR-008 — Changes reach an environment only through an approved pull request
+## ADR-008 — `main` is open; production is reached only through Max's Merge
 
 **Context.** Code is written in Claude Code sessions in the Claude app and
-pushed to GitHub. Max reviews by using the app, not by reading code. A
-change must not reach an environment Max relies on before he has seen it.
+pushed to GitHub. Max reviews by using the app, not by reading code. The
+first plan (2026-11-13) protected `main` and sent every change through a
+pull request. On 2026-11-17 (Day 2) Max decided against protecting `main`:
+he wants to push to it directly, and wants Claude to be able to as well.
 
-**Decision.** Every change (Claude's, a Notion schema sync, or a manual edit)
-goes on a branch and becomes a pull request with automatic checks and its
-own preview environment. Max tries the preview and presses Merge. Merging to
-`main` deploys **staging**. Once production exists, a release is a second
-pull request from `main` into the `production` branch, also merged by Max
-(see ADR-009).
+**Decision.**
+- `main` has no branch protection. Max and Claude may push to it directly;
+  pushing to `main` deploys **staging**.
+- A pull request (with its checks and, from Day 5, its own preview
+  environment) is still used when there's something Max should try before
+  it reaches staging: new screens, changes to the write path, anything
+  touching data. Docs, status updates and small fixes can go straight to
+  `main`.
+- Claude runs `pnpm check` before every push to `main`; the `checks` job
+  also runs on every push to `main`, so a red build is visible right away.
+- **Production stays gated.** Once it exists (Day 14), a release is a pull
+  request from `main` into the `production` branch, merged by Max, and the
+  `production` branch gets protection then (see ADR-009).
 
 **Consequences.**
-- One tap per change, one more per release; no environment runs unreviewed code.
-- No direct pushes to `main` or `production`; branch protection enforces it.
+- Faster: no tap needed for routine changes; staging is a working
+  environment that can briefly be broken.
+- Nothing stops a bad change reaching staging except the checks run before
+  pushing; a broken `main` is fixed forward with another push.
 - Manual editing uses GitHub Codespaces (VS Code in the browser,
-  preconfigured by a dev container) or VS Code / Cursor locally, and follows
-  the same pull-request route.
+  preconfigured by a dev container), VS Code / Cursor locally, or the
+  GitHub website, straight to `main` or via a pull request.
 
 ## ADR-009 — Environments: preview, staging, production; nothing hard-coded
 

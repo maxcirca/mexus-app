@@ -1,5 +1,5 @@
-# Automatic checks on every pull request (and on main after Merge).
-# Branch protection on main requires the "checks" job to pass.
+# Automatic checks on every pull request and every push to main.
+# main is unprotected by choice (ADR-008): a red run on main means fix forward.
 name: Checks
 
 on:

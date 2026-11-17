@@ -57,10 +57,12 @@ Keep it short. At the end of every session, update "Current status" in
 
 ## Workflow
 
-- Never push to `main` or `production`. Work on a branch, open a pull
-  request, Max merges after trying the preview.
-- Use a fresh branch per day (e.g. `day-2-foundations`), never a long-lived
-  one; it is deleted after merging.
+- `main` is open (ADR-008): pushing to it deploys staging. Docs, status
+  updates and small fixes may go straight to `main` after `pnpm check`
+  passes. Anything Max should try first (new screens, the write path,
+  anything touching data) goes on a fresh branch (e.g. `day-3-staging`)
+  as a pull request that Max merges; the branch is deleted after merging.
+- Never push to `production`; releases are a pull request Max merges.
 - Max is not reading code: describe changes by what he will see, and give
   him something concrete to check in each pull request.
 - Bump nothing by hand for the build stamp; it's injected at build time.
