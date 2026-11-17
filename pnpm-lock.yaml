@@ -23,12 +23,40 @@ importers:
       '@hono/node-server':
         specifier: ^2.1.9
         version: 2.1.9(hono@4.13.19)
+      '@mexus/build-info':
+        specifier: workspace:*
+        version: link:../../packages/build-info
       hono:
         specifier: ^4.13.19
         version: 4.13.19
       tsx:
         specifier: ^4.23.15
         version: 4.23.15
+    devDependencies:
+      vitest:
+        specifier: ^5.1.0
+        version: 5.1.0(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(tsx@4.23.15))
+
+  apps/web:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^2.1.9
+        version: 2.1.9(hono@4.13.19)
+      '@mexus/build-info':
+        specifier: workspace:*
+        version: link:../../packages/build-info
+      hono:
+        specifier: ^4.13.19
+        version: 4.13.19
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+    devDependencies:
+      vitest:
+        specifier: ^5.1.0
+        version: 5.1.0(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(tsx@4.23.15))
+
+  packages/build-info:
     devDependencies:
       vitest:
         specifier: ^5.1.0

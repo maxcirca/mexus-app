@@ -1,8 +1,8 @@
 import { serve } from "@hono/node-server";
+import { currentBuildInfo } from "@mexus/build-info";
 import { createApp } from "./app.ts";
-import { readBuildInfo } from "./build-info.ts";
 
-const build = readBuildInfo();
+const build = currentBuildInfo();
 const port = Number(process.env.PORT) || 3000;
 
 serve({ fetch: createApp(build).fetch, port }, (info) => {
