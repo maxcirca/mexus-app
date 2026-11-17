@@ -154,6 +154,10 @@ scripts, in one pnpm monorepo.
 - Web: static export (`expo export --platform web`) hosted as a static site.
 - Charts must work on both native and web; the library choice is deferred to
   the charts phase (spike first).
+- Tooling (Day 2): Node 22, pnpm workspaces (`apps/*`, `packages/*`), Biome
+  for lint and format, `tsc` for type checks, Vitest for tests. The API runs
+  TypeScript directly with `tsx`, no build step. One CI job, `checks`, runs
+  all three on every pull request and is required before Merge.
 
 ## ADR-005 — A thin API between the app and ClickHouse
 
