@@ -26,6 +26,13 @@ Expo (Android + web) → Hono API → ClickHouse, all on Railway; fields
 generated from Notion "Mexus Items" into `packages/schema/schema.json`.
 TypeScript everywhere, pnpm monorepo, one repository for all services.
 
+## Checks
+
+`pnpm check` runs exactly what every pull request runs (the `checks` job in
+`.github/workflows/checks.yml`): Biome lint and format, `tsc` type check,
+Vitest tests. Run it before pushing; `pnpm format` fixes formatting. Biome
+leaves Markdown alone. Folder layout: `README.md`.
+
 ## Environments
 
 Preview (one per pull request), staging (`main`), production (`production`

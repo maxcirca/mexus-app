@@ -1,0 +1,17 @@
+{
+  "name": "Mexus",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "postCreateCommand": "corepack enable && corepack install && pnpm install",
+  "forwardPorts": [3000],
+  "portsAttributes": { "3000": { "label": "API" } },
+  "customizations": {
+    "vscode": {
+      "extensions": ["biomejs.biome"],
+      "settings": {
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true,
+        "[markdown]": { "editor.formatOnSave": false }
+      }
+    }
+  }
+}

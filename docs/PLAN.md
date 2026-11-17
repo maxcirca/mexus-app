@@ -16,19 +16,24 @@ Status key: ⏳ not started · 🚧 in progress · ✅ done
 
 ## Current status
 
-*Updated at the end of every session.* Last update: 2026-11-16, end of Day 1.
+*Updated at the end of every session.* Last update: 2026-11-17, Day 2.
 
 - **Day 1 done.** Every service connected and tested: GitHub, Railway
-  (project "Mexus", empty), Expo, Cloudflare (R2 enabled, no bucket yet),
-  Notion, Miro. DNS for `boit.net` is at all-inkl.com, no connector; Max
-  adds records on Day 3. Oura taken out of scope.
-- **Planning docs on `main`** via pull request #1, merged by Max.
-- **Open for Max before Day 2** (needs the GitHub website, not the mobile app):
-  1. Settings → General → Default branch → `main`, confirm the dialog.
-  2. Branches page → delete `claude/inspiring-tesla-7ttr2d` (only possible
-     once it's no longer the default).
-  3. Optional: Settings → General → "Automatically delete head branches".
-- **Next: Day 2, repository foundations** (see Stage 1).
+  (project "Mexus", empty apart from Railway's default `production`
+  environment), Expo, Cloudflare (R2 enabled, no bucket yet), Notion, Miro.
+  `main` is the default branch.
+- **Day 2 in review.** Pull request with the code project (pnpm workspace,
+  `apps/api` with `/health`, `apps/app` placeholder, `packages/schema`),
+  the `checks` job on every pull request, Codespaces setup. Done when Max
+  has merged it and turned on the `main` rule, then a direct push to `main`
+  is refused.
+- **Open for Max** (GitHub website, not the mobile app):
+  1. Branches page → delete `claude/inspiring-tesla-7ttr2d` (old, merged).
+  2. Settings → General → tick "Automatically delete head branches".
+  3. Protect `main` (steps in the Day 2 pull request).
+- **Next: Day 3, Railway staging** (see Stage 1). Railway's default
+  environment is called `production`; Day 3 renames it to `staging` rather
+  than adding a second one.
 
 ## Done before Day 1 ✅
 
@@ -50,7 +55,7 @@ travels the whole pipeline to the phone and the browser.
 | Day | Session | Max checks |
 |---|---|---|
 | 1 ✅ | **Accounts and connectors.** Max subscribes/creates and connects (list below); Claude tests every connector with a harmless action and records the result in `docs/ACCESS.md` | Every row in the access map is green |
-| 2 | **Repository foundations.** AGENTS.md, code project with one folder per service, automatic checks on every pull request, `main` protected, Codespaces setup | First pull request with green checks, merged by Max; a direct push to `main` is refused |
+| 2 🚧 | **Repository foundations.** AGENTS.md, code project with one folder per service, automatic checks on every pull request, `main` protected, Codespaces setup | First pull request with green checks, merged by Max; a direct push to `main` is refused |
 | 3 | **Railway staging.** Staging environment with ClickHouse (persistent volume), empty API and web services, staging URLs, variables; the environment pattern from ADR-009 | Both staging links answer and show "staging" |
 | 4 | **Expo.** Expo project, `staging` and `preview` channels, first "Mexus Staging" Android build installed | The app is on the phone and shows "staging" |
 | 5 | **Previews and safety.** A preview environment per pull request, nightly backup to R2, TablePlus read-only access | A pull request shows a preview link; a backup file appears in R2; TablePlus opens the database |
@@ -64,7 +69,7 @@ after is building the app.
 
 | What | Max does | Status |
 |---|---|---|
-| GitHub | Make `main` the default branch | to do |
+| GitHub | Make `main` the default branch | done |
 | Railway | Plan that allows always-on services and preview environments (likely Hobby); decide which of the two "Mexus" projects to use (or delete both and start clean) | connected, plan unchecked |
 | Expo | Free account at expo.dev; connect the Expo connector in claude.ai | to do |
 | Cloudflare | Free account; connect the Cloudflare connector in claude.ai | to do |
