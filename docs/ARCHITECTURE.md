@@ -151,7 +151,9 @@ scripts, in one pnpm monorepo.
   later) are available through Expo modules without leaving the stack.
 - Android distribution: EAS Build producing an APK installed directly (no Play
   Store needed for a single user); JS-only changes ship over EAS Update.
-- Web: static export (`expo export --platform web`) hosted as a static site.
+- Web: static export (`expo export --platform web`) served by the small
+  `apps/web` service (ADR-006), which also hands the app its runtime
+  configuration, so one build works in every environment.
 - Charts must work on both native and web; the library choice is deferred to
   the charts phase (spike first).
 - Tooling (Day 2): Node 22, pnpm workspaces (`apps/*`, `packages/*`), Biome
@@ -190,6 +192,25 @@ roughly $66/month minimum on the Basic plan. Usage is minuscule.
 **Decision.** One Railway project with three services per environment:
 `clickhouse` (official image + persistent volume, private network only),
 `api` (public HTTPS) and `web` (the static web build).
+
+As built on Day 3 (2026-11-17), in Railway's Europe region (`europe-west4`):
+- `clickhouse`: image `clickhouse/clickhouse-server:26.8` (an LTS release;
+  upgrade deliberately, never `latest`), volume `clickhouse-data` at
+  `/var/lib/clickhouse`, database and user `mexus`, password set by Max as
+  a Railway variable. No public domain or TCP proxy; reachable only at
+  `clickhouse.railway.internal:8123` from the other services.
+- `api` and `web`: built from the repository root by Railpack (the pnpm
+  workspace needs the root), `scripts/stamp-build.mjs` as build command
+  (records the build time), `pnpm --filter @mexus/<service> start` as start
+  command, healthcheck `/health`. Watch paths limit redeploys to the
+  service's own folder plus `packages/`, `scripts/` and the lockfile.
+- `web` is a small Hono server, not a bare static host: it serves the Expo
+  web export and `/config.json` (environment name, API URL) from its
+  variables, plus a placeholder page until the app exists.
+- Variables: `MEXUS_ENV` is shared per environment; the API reads the
+  ClickHouse connection through references to the `clickhouse` service's
+  variables (`${{clickhouse.CLICKHOUSE_PASSWORD}}` etc.); `web` has
+  `MEXUS_API_URL`.
 
 **Consequences.**
 - Cheap, and one place to look.
