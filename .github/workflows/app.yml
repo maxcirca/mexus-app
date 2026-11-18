@@ -65,12 +65,26 @@ jobs:
             echo "ready=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # Build a new APK only when native code changed (a new fingerprint);
+      # otherwise publish an over-the-air update for the installed app.
       - name: Build or update (staging)
         if: steps.project.outputs.ready == 'true'
-        uses: expo/expo-github-action/continuous-deploy-fingerprint@v9
-        with:
-          working-directory: apps/app
-          profile: staging
-          platform: android
-          environment: preview
-          branch: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || 'staging' }}
+        working-directory: apps/app
+        env:
+          UPDATE_BRANCH: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || 'staging' }}
+          MESSAGE: ${{ github.event.pull_request.title || github.event.head_commit.message || 'Manual run' }}
+        run: |
+          fingerprint=$(npx expo-updates fingerprint:generate --platform android | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).hash))')
+          echo "Android fingerprint: $fingerprint"
+          builds=$(eas build:list --platform android --build-profile staging --fingerprint-hash "$fingerprint" --limit 5 --json --non-interactive)
+          build_id=$(echo "$builds" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const b=JSON.parse(s).filter(x=>x.status!=="ERRORED"&&x.status!=="CANCELED");console.log(b[0]?.id||"")})')
+          if [ -z "$build_id" ]; then
+            echo "Native code changed: starting a new Mexus Staging build."
+            eas build --platform android --profile staging --non-interactive --no-wait --json > build.json
+            build_id=$(node -e 'console.log(require("./build.json")[0].id)')
+            echo "New APK build started: https://expo.dev/projects/be0b247a-59c7-40cd-ad28-2bdce9029e87/builds/$build_id" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Existing build $build_id matches; publishing an over-the-air update to $UPDATE_BRANCH."
+            eas update --branch "$UPDATE_BRANCH" --platform android --environment preview --message "${MESSAGE%%$'\n'*}" --non-interactive
+            echo "Over-the-air update published to branch $UPDATE_BRANCH (APK: https://expo.dev/projects/be0b247a-59c7-40cd-ad28-2bdce9029e87/builds/$build_id)" >> "$GITHUB_STEP_SUMMARY"
+          fi
