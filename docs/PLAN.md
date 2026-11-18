@@ -91,7 +91,7 @@ after is building the app.
 | 11 | Form drawn from the schema: date, time, switches, sliders; autosave and "Saved at" | Fills in part of Morning on the phone |
 | 12 | Remaining field types: select, multi-select, text, per-med dosage, show/hide rules | Every Morning field works |
 | 13 | Defaults and carry-over from the previous day, streak, Home buttons turn green | Next morning the form starts from yesterday's values |
-| 14 | Production environment created from staging (URLs, Mexus app, backups); location and map; polish | Uses Mexus in production instead of Appsmith for Morning from here on |
+| 14 | Production environment created from staging (URLs, Mexus app, backups); passkey sign-in (ADR-005); location and map; polish | Uses Mexus in production instead of Appsmith for Morning from here on |
 
 ## Stage 4 — Midday and Evening ⏳
 

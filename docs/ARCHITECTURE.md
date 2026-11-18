@@ -177,9 +177,22 @@ credentials must never ship in the app.
 | `GET` | `/status/:date` | Which sections are logged on a date (Home buttons) |
 | `GET` | `/series?section&field&from&to` | Time series for in-app charts |
 
-Auth: one long random bearer token (env var on the API, stored in the app's
-SecureStore / browser storage after a one-time entry). Single user, so no
-accounts. Revisit (passkeys) only if that changes.
+Auth (decided 2026-11-18): **passkeys, no password.** Single user, so no
+accounts or sign-up.
+- First sign-in on a device: a one-time setup code (Railway variable,
+  per environment) unlocks passkey registration; the device's fingerprint
+  or face then creates the passkey (WebAuthn, e.g. SimpleWebAuthn on Hono).
+- Afterwards: passkey sign-in → a session of about 90 days per device
+  (HttpOnly cookie on web, SecureStore token on Android). A "Devices" list
+  revokes a lost device; a new setup code recovers from losing all of them.
+- Android passkeys need Digital Asset Links (`/.well-known/assetlinks.json`
+  on `mexus.boit.net`) tying the app to the domain.
+- Until production (Day 14), staging and previews use one long random
+  bearer token per environment; they hold test data only.
+- Around it: every route but `/health` requires auth; failed attempts are
+  rate-limited; CORS allows only the environment's web origin; the web app
+  loads no third-party scripts (strict CSP); `/health` reveals only
+  environment, build stamp and database ok/not ok.
 
 **Consequences.** The API owns validation and derived-value logic, so it is
 unit-testable without a UI, which the Appsmith app never was.
