@@ -46,7 +46,7 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - uses: expo/expo-github-action@v8
+      - uses: expo/expo-github-action@v9
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
@@ -67,7 +67,7 @@ jobs:
 
       - name: Build or update (staging)
         if: steps.project.outputs.ready == 'true'
-        uses: expo/expo-github-action/continuous-deploy-fingerprint@v8
+        uses: expo/expo-github-action/continuous-deploy-fingerprint@v9
         with:
           working-directory: apps/app
           profile: staging
