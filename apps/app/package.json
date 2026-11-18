@@ -19,7 +19,6 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
     "web": "expo start --web",
     "export:web": "expo export --platform web",
     "typecheck": "tsc --noEmit",
