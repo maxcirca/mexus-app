@@ -8,7 +8,8 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
  */
 const environment = process.env.MEXUS_ENV || "local";
 const isProduction = environment === "production";
-const projectId = process.env.EAS_PROJECT_ID || "";
+// The Expo project (not a secret): created on Day 4 by the App workflow.
+const projectId = "be0b247a-59c7-40cd-ad28-2bdce9029e87";
 
 function titleCase(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -24,7 +25,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: "./assets/icon.png",
   userInterfaceStyle: "automatic",
   runtimeVersion: { policy: "fingerprint" },
-  updates: projectId ? { url: `https://u.expo.dev/${projectId}` } : undefined,
+  updates: { url: `https://u.expo.dev/${projectId}` },
   android: {
     package: isProduction ? "net.boit.mexus" : `net.boit.mexus.${environment}`,
     adaptiveIcon: {
@@ -40,7 +41,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     output: "single",
   },
   extra: {
-    ...(projectId ? { eas: { projectId } } : {}),
+    eas: { projectId },
     mexus: {
       environment,
       gitSha: process.env.EAS_BUILD_GIT_COMMIT_HASH || process.env.GITHUB_SHA || "unknown",
