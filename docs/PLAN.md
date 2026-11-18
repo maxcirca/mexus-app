@@ -16,24 +16,27 @@ Status key: ⏳ not started · 🚧 in progress · ✅ done
 
 ## Current status
 
-*Updated at the end of every session.* Last update: 2026-11-17, Day 3.
+*Updated at the end of every session.* Last update: 2026-11-18, Day 4.
 
-- **Days 1–2 done.** All services connected; code project, checks and
-  Codespaces on `main`. `main` is deliberately unprotected (ADR-008).
-- **Day 3 done (pending DNS).** Railway environment `staging` (renamed from
-  the default `production`) runs `clickhouse` (26.8, 50 GB volume, private
-  only), `api` and `web`, all deploying from `main`. Both answer and say
-  "staging" on their Railway addresses:
-  `web-staging-e42645a2.up.railway.app`, `api-staging-9276465d.up.railway.app/health`.
-  `staging.mexus.boit.net` and `api.staging.mexus.boit.net` are attached in
-  Railway and wait for Max's DNS records at all-inkl.com (two CNAME + two
-  TXT; values in Railway → service → Settings → Networking).
-- **Open for Max:** the DNS records above; delete the old branches
-  `claude/inspiring-tesla-7ttr2d` and `claude/sleepy-lamport-1ijg09`; tick
-  "Automatically delete head branches".
-- **Next: Day 4, Expo** (see Stage 1). The `web` service already serves
-  `apps/app/dist` once the Expo web export exists, and `/config.json` hands
-  it the API URL.
+- **Days 1–3 done.** Staging runs on Railway and answers on its own domains:
+  https://staging.mexus.boit.net and https://api.staging.mexus.boit.net/health
+  (DNS and certificates done 2026-11-18).
+- **Passkeys decided** for sign-in to the real app (ADR-005); built on Day 14.
+- **Day 4 in review:** [maxcirca/mexus-app#4](https://github.com/maxcirca/mexus-app/pull/4).
+  Expo app in `apps/app` (SDK 58), shows environment and build stamp on
+  Android and web. `.github/workflows/app.yml` builds a new Mexus Staging
+  APK when the native fingerprint changes and otherwise publishes an
+  over-the-air update (`staging` from `main`, `pr-<n>` from pull requests).
+  First APK built from the pull request. The Railway `web` build command
+  now also exports the web app (`--if-present`, safe before the merge).
+- **Open for Max:** install the APK from #4 and check it says STAGING, then
+  Merge; delete the branches `claude/inspiring-tesla-7ttr2d`,
+  `claude/sleepy-lamport-1ijg09` and `day-4-expo`; tick "Automatically
+  delete head branches".
+- **Next: Day 5, previews and safety.** Pull requests get a preview build
+  profile and channel (today they build the staging APK and publish to
+  `pr-<n>`); TablePlus read-only access stays always-on with a long
+  password (Max's call is still open); add GitHub secret scanning.
 
 ## Done before Day 1 ✅
 
@@ -57,7 +60,7 @@ travels the whole pipeline to the phone and the browser.
 | 1 ✅ | **Accounts and connectors.** Max subscribes/creates and connects (list below); Claude tests every connector with a harmless action and records the result in `docs/ACCESS.md` | Every row in the access map is green |
 | 2 ✅ | **Repository foundations.** AGENTS.md, code project with one folder per service, automatic checks on every pull request and push to `main`, Codespaces setup (`main` left open, ADR-008) | First pull request with green checks, merged by Max |
 | 3 ✅ | **Railway staging.** Staging environment with ClickHouse (persistent volume), empty API and web services, staging URLs, variables; the environment pattern from ADR-009 | Both staging links answer and show "staging" |
-| 4 | **Expo.** Expo project, `staging` and `preview` channels, first "Mexus Staging" Android build installed | The app is on the phone and shows "staging" |
+| 4 🚧 | **Expo.** Expo project, `staging` and `preview` channels, first "Mexus Staging" Android build installed | The app is on the phone and shows "staging" |
 | 5 | **Previews and safety.** A preview environment per pull request, nightly backup to R2, TablePlus read-only access | A pull request shows a preview link; a backup file appears in R2; TablePlus opens the database |
 | 6 | **Hello World.** Web and Android show the environment, build stamp and database status; a merged text change reaches both | Change appears on phone and web after Merge, without reinstalling |
 | 7 | **Hello World saves a value.** One slider end to end | Moved on the phone, visible on the web and in TablePlus |

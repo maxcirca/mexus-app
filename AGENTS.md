@@ -33,6 +33,16 @@ TypeScript everywhere, pnpm monorepo, one repository for all services.
 Vitest tests. Run it before pushing; `pnpm format` fixes formatting. Biome
 leaves Markdown alone. Folder layout: `README.md`.
 
+## Expo (`apps/app`)
+
+Expo changes a lot between SDK releases: check the docs for the SDK in
+`apps/app/package.json` (Expo connector `search_documentation`, or
+docs.expo.dev) rather than memory. Add Expo/React Native packages with
+`npx expo install <pkg>` inside `apps/app` (picks SDK-compatible versions),
+not `pnpm add`. The native `android/` folder is generated at build time and
+never committed. Builds and over-the-air updates run from
+`.github/workflows/app.yml`.
+
 ## Environments
 
 Preview (one per pull request), staging (`main`), production (`production`

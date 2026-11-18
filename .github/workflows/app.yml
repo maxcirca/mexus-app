@@ -1,0 +1,90 @@
+# The Mexus Android app on EAS (Expo), ADR-004 and ADR-009.
+# - Push to main: staging. A change to native code builds a new
+#   "Mexus Staging" APK; anything else ships as an over-the-air update on
+#   the `staging` channel, so the installed app picks it up without
+#   reinstalling.
+# - Pull request: the same, but updates go to a branch of their own
+#   (pr-<number>), so nothing reaches the staging app before Merge.
+#   EAS comments on the pull request with the build link.
+# Needs the EXPO_TOKEN repository secret (docs/ACCESS.md).
+name: App
+
+on:
+  push:
+    branches: [main]
+    paths: &app-paths
+      - apps/app/**
+      - packages/**
+      - pnpm-lock.yaml
+      - .github/workflows/app.yml
+  pull_request:
+    paths: *app-paths
+  workflow_dispatch:
+
+concurrency:
+  group: app-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  eas:
+    name: eas
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # The app config reads this; EAS builds get it from eas.json, but
+      # over-the-air updates are bundled here on the runner.
+      MEXUS_ENV: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: expo/expo-github-action@v9
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # One-time: creates the Expo project if the app config doesn't name one
+      # yet and prints its ID, which then goes into app.config.ts.
+      - name: Expo project
+        id: project
+        working-directory: apps/app
+        run: |
+          if npx expo config --json | node -e 'const c=JSON.parse(require("fs").readFileSync(0));process.exit(c.extra?.eas?.projectId?0:1)'; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            eas init --non-interactive --force || true
+            echo "::warning::No Expo project ID in app.config.ts yet; copy the ID printed above into it."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Build a new APK only when native code changed (a new fingerprint);
+      # otherwise publish an over-the-air update for the installed app.
+      - name: Build or update (staging)
+        if: steps.project.outputs.ready == 'true'
+        working-directory: apps/app
+        env:
+          UPDATE_BRANCH: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || 'staging' }}
+          MESSAGE: ${{ github.event.pull_request.title || github.event.head_commit.message || 'Manual run' }}
+        run: |
+          fingerprint=$(npx expo-updates fingerprint:generate --platform android | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).hash))')
+          echo "Android fingerprint: $fingerprint"
+          builds=$(eas build:list --platform android --build-profile staging --fingerprint-hash "$fingerprint" --limit 5 --json --non-interactive)
+          build_id=$(echo "$builds" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const b=JSON.parse(s).filter(x=>x.status!=="ERRORED"&&x.status!=="CANCELED");console.log(b[0]?.id||"")})')
+          if [ -z "$build_id" ]; then
+            echo "Native code changed: starting a new Mexus Staging build."
+            eas build --platform android --profile staging --non-interactive --no-wait --json > build.json
+            build_id=$(node -e 'console.log(require("./build.json")[0].id)')
+            echo "New APK build started: https://expo.dev/projects/be0b247a-59c7-40cd-ad28-2bdce9029e87/builds/$build_id" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Existing build $build_id matches; publishing an over-the-air update to $UPDATE_BRANCH."
+            eas update --branch "$UPDATE_BRANCH" --platform android --environment preview --message "${MESSAGE%%$'\n'*}" --non-interactive
+            echo "Over-the-air update published to branch $UPDATE_BRANCH (APK: https://expo.dev/projects/be0b247a-59c7-40cd-ad28-2bdce9029e87/builds/$build_id)" >> "$GITHUB_STEP_SUMMARY"
+          fi

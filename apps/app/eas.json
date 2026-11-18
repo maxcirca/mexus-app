@@ -1,0 +1,26 @@
+{
+  "cli": {
+    "version": ">= 27.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "node": "22.23.5",
+      "android": { "buildType": "apk" },
+      "distribution": "internal",
+      "autoIncrement": true
+    },
+    "staging": {
+      "extends": "base",
+      "channel": "staging",
+      "environment": "preview",
+      "env": { "MEXUS_ENV": "staging" }
+    },
+    "preview": {
+      "extends": "base",
+      "channel": "preview",
+      "environment": "preview",
+      "env": { "MEXUS_ENV": "preview" }
+    }
+  }
+}
