@@ -12,7 +12,7 @@ describe("web service", () => {
 
   it("hands the app its environment and API URL at runtime", async () => {
     const res = await app.request("/config.json");
-    expect(await res.json()).toEqual({ environment: "staging", apiUrl: "https://api.example.test" });
+    expect(await res.json()).toEqual({ ...build, apiUrl: "https://api.example.test" });
   });
 
   it("shows a placeholder naming the environment until the app is built", async () => {

@@ -21,7 +21,8 @@ export function createApp({ build, apiUrl, staticDir }: WebConfig) {
 
   app.get("/health", (c) => c.json({ status: "ok", service: "web", ...build }));
 
-  app.get("/config.json", (c) => c.json({ environment: build.environment, apiUrl }));
+  // The web app is exported in the same build, so this stamp is its stamp too.
+  app.get("/config.json", (c) => c.json({ ...build, apiUrl }));
 
   if (existsSync(staticDir)) {
     app.use("/*", serveStatic({ root: staticDir }));

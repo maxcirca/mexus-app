@@ -1,0 +1,76 @@
+# The Mexus Android app on EAS (Expo), ADR-004 and ADR-009.
+# - Push to main: staging. A change to native code builds a new
+#   "Mexus Staging" APK; anything else ships as an over-the-air update on
+#   the `staging` channel, so the installed app picks it up without
+#   reinstalling.
+# - Pull request: the same, but updates go to a branch of their own
+#   (pr-<number>), so nothing reaches the staging app before Merge.
+#   EAS comments on the pull request with the build link.
+# Needs the EXPO_TOKEN repository secret (docs/ACCESS.md).
+name: App
+
+on:
+  push:
+    branches: [main]
+    paths: &app-paths
+      - apps/app/**
+      - packages/**
+      - pnpm-lock.yaml
+      - .github/workflows/app.yml
+  pull_request:
+    paths: *app-paths
+  workflow_dispatch:
+
+concurrency:
+  group: app-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  eas:
+    name: eas
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # The app config reads this; EAS builds get it from eas.json, but
+      # over-the-air updates are bundled here on the runner.
+      MEXUS_ENV: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # One-time: creates the Expo project if the app config doesn't name one
+      # yet and prints its ID, which then goes into app.config.ts.
+      - name: Expo project
+        id: project
+        working-directory: apps/app
+        run: |
+          if npx expo config --json | node -e 'const c=JSON.parse(require("fs").readFileSync(0));process.exit(c.extra?.eas?.projectId?0:1)'; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            eas init --non-interactive --force || true
+            echo "::warning::No Expo project ID in app.config.ts yet; copy the ID printed above into it."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build or update (staging)
+        if: steps.project.outputs.ready == 'true'
+        uses: expo/expo-github-action/continuous-deploy-fingerprint@v8
+        with:
+          working-directory: apps/app
+          profile: staging
+          platform: android
+          environment: preview
+          branch: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || 'staging' }}
