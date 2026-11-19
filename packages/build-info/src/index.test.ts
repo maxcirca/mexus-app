@@ -11,6 +11,15 @@ describe("readBuildInfo", () => {
     expect(readBuildInfo({ RAILWAY_GIT_COMMIT_SHA: "r1", MEXUS_GIT_SHA: "m1" }).gitSha).toBe("m1");
   });
 
+  it("calls a Railway pull-request environment a preview, whatever it copied from staging", () => {
+    expect(readBuildInfo({ MEXUS_ENV: "staging", RAILWAY_ENVIRONMENT_NAME: "pr-12" }).environment).toBe("preview");
+    expect(readBuildInfo({ MEXUS_ENV: "staging", RAILWAY_ENVIRONMENT_NAME: "mexus-app-pr-7" }).environment).toBe(
+      "preview",
+    );
+    expect(readBuildInfo({ MEXUS_ENV: "staging", RAILWAY_ENVIRONMENT_NAME: "staging" }).environment).toBe("staging");
+    expect(readBuildInfo({ MEXUS_ENV: "staging", RAILWAY_ENVIRONMENT_NAME: "sprint-12" }).environment).toBe("staging");
+  });
+
   it("takes the build time from the stamp file written at build", () => {
     expect(readBuildInfo({}, { buildTime: "2026-11-17T12:00:00Z" }).buildTime).toBe("2026-11-17T12:00:00Z");
   });
