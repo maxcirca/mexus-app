@@ -20,6 +20,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@clickhouse/client':
+        specifier: ^1.25.0
+        version: 1.25.0
       '@hono/node-server':
         specifier: ^2.1.9
         version: 2.1.9(hono@4.13.19)
@@ -70,6 +73,41 @@ importers:
       typescript:
         specifier: ~6.0.3
         version: 6.0.3
+      vitest:
+        specifier: ^5.1.0
+        version: 5.1.0(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(tsx@4.23.15))
+
+  apps/backup:
+    dependencies:
+      '@clickhouse/client':
+        specifier: ^1.25.0
+        version: 1.25.0
+      '@mexus/build-info':
+        specifier: workspace:*
+        version: link:../../packages/build-info
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+    devDependencies:
+      vitest:
+        specifier: ^5.1.0
+        version: 5.1.0(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(tsx@4.23.15))
+
+  apps/db-gate:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^2.1.9
+        version: 2.1.9(hono@4.13.19)
+      '@mexus/build-info':
+        specifier: workspace:*
+        version: link:../../packages/build-info
+      hono:
+        specifier: ^4.13.19
+        version: 4.13.19
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+    devDependencies:
       vitest:
         specifier: ^5.1.0
         version: 5.1.0(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(tsx@4.23.15))
@@ -529,6 +567,10 @@ packages:
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
+
+  '@clickhouse/client@1.25.0':
+    resolution: {integrity: sha512-sxoCDlA8iOEGpGrJzl9SeNvG7II6e5kSeo0JI4Mru2QhwhjydWuDEE55ryZg3vIJ0CSJ1bhn9+Xtnuvf1BZT/w==}
+    engines: {node: '>=20'}
 
   '@emnapi/core@2.0.0-beta.2':
     resolution: {integrity: sha512-MzCVoWtcg4Pm2B3je5mMvYMvj3MmBKw+fU7vbsJc9/iT8ip6/eYIHo/Dsm/mr+wsHB6SEyJDuxB09Yy6r/8+4A==}
@@ -3458,6 +3500,8 @@ snapshots:
 
   '@biomejs/cli-win32-x64@2.6.8':
     optional: true
+
+  '@clickhouse/client@1.25.0': {}
 
   '@emnapi/core@2.0.0-beta.2':
     dependencies:

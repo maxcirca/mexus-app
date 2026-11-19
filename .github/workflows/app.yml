@@ -3,9 +3,10 @@
 #   "Mexus Staging" APK; anything else ships as an over-the-air update on
 #   the `staging` channel, so the installed app picks it up without
 #   reinstalling.
-# - Pull request: the same, but updates go to a branch of their own
-#   (pr-<number>), so nothing reaches the staging app before Merge.
-#   EAS comments on the pull request with the build link.
+# - Pull request: preview. The same, but as the separate "Mexus Preview"
+#   app: updates go to the branch pr-<number>, the `preview` channel is
+#   pointed at it (the latest pull request wins), and a comment on the pull
+#   request links the APK. Nothing reaches the staging app before Merge.
 # Needs the EXPO_TOKEN repository secret (docs/ACCESS.md).
 name: App
 
@@ -35,9 +36,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      # The app config reads this; EAS builds get it from eas.json, but
-      # over-the-air updates are bundled here on the runner.
-      MEXUS_ENV: staging
+      # Build profile and channel in eas.json, and the environment the app
+      # config reads (EAS builds get it from eas.json; over-the-air updates
+      # are bundled here on the runner).
+      PROFILE: ${{ github.event_name == 'pull_request' && 'preview' || 'staging' }}
+      MEXUS_ENV: ${{ github.event_name == 'pull_request' && 'preview' || 'staging' }}
+      UPDATE_BRANCH: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || 'staging' }}
+      BUILDS_URL: https://expo.dev/accounts/ember-holdings/projects/mexus/builds
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -67,24 +72,40 @@ jobs:
 
       # Build a new APK only when native code changed (a new fingerprint);
       # otherwise publish an over-the-air update for the installed app.
-      - name: Build or update (staging)
+      - name: Build or update
+        id: deploy
         if: steps.project.outputs.ready == 'true'
         working-directory: apps/app
         env:
-          UPDATE_BRANCH: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || 'staging' }}
           MESSAGE: ${{ github.event.pull_request.title || github.event.head_commit.message || 'Manual run' }}
         run: |
           fingerprint=$(npx expo-updates fingerprint:generate --platform android | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).hash))')
-          echo "Android fingerprint: $fingerprint"
-          builds=$(eas build:list --platform android --build-profile staging --fingerprint-hash "$fingerprint" --limit 5 --json --non-interactive)
+          echo "Android fingerprint ($PROFILE): $fingerprint"
+          builds=$(eas build:list --platform android --build-profile "$PROFILE" --fingerprint-hash "$fingerprint" --limit 5 --json --non-interactive)
           build_id=$(echo "$builds" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const b=JSON.parse(s).filter(x=>x.status!=="ERRORED"&&x.status!=="CANCELED");console.log(b[0]?.id||"")})')
           if [ -z "$build_id" ]; then
-            echo "Native code changed: starting a new Mexus Staging build."
-            eas build --platform android --profile staging --non-interactive --no-wait --json > build.json
+            echo "Native code changed: starting a new $PROFILE build."
+            eas build --platform android --profile "$PROFILE" --non-interactive --no-wait --json > build.json
             build_id=$(node -e 'console.log(require("./build.json")[0].id)')
-            echo "New APK build started: https://expo.dev/projects/be0b247a-59c7-40cd-ad28-2bdce9029e87/builds/$build_id" >> "$GITHUB_STEP_SUMMARY"
+            summary="A new **Mexus ${PROFILE^}** APK is building (about 10 minutes): $BUILDS_URL/$build_id. Install it from that page once it's finished."
           else
-            echo "Existing build $build_id matches; publishing an over-the-air update to $UPDATE_BRANCH."
+            echo "Build $build_id matches; publishing an over-the-air update to $UPDATE_BRANCH."
             eas update --branch "$UPDATE_BRANCH" --platform android --environment preview --message "${MESSAGE%%$'\n'*}" --non-interactive
-            echo "Over-the-air update published to branch $UPDATE_BRANCH (APK: https://expo.dev/projects/be0b247a-59c7-40cd-ad28-2bdce9029e87/builds/$build_id)" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$PROFILE" = preview ]; then
+              eas channel:edit preview --branch "$UPDATE_BRANCH" --non-interactive \
+                || { eas channel:create preview --non-interactive && eas channel:edit preview --branch "$UPDATE_BRANCH" --non-interactive; }
+            fi
+            summary="Published as an over-the-air update: open **Mexus ${PROFILE^}** twice to get it. (Its APK, if you need to install it: $BUILDS_URL/$build_id.)"
           fi
+          echo "$summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "summary=$summary" >> "$GITHUB_OUTPUT"
+
+      - name: Tell the pull request
+        if: github.event_name == 'pull_request' && steps.deploy.outputs.summary
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUMMARY: ${{ steps.deploy.outputs.summary }}
+        run: |
+          body="**Phone (Mexus Preview):** $SUMMARY"
+          gh pr comment "${{ github.event.number }}" --repo "${{ github.repository }}" --edit-last --body "$body" \
+            || gh pr comment "${{ github.event.number }}" --repo "${{ github.repository }}" --body "$body"

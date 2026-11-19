@@ -3,7 +3,8 @@ import { readFileSync } from "node:fs";
 /**
  * Build stamp: which environment this is and which code it runs (ADR-009).
  * Everything comes from configuration, never from code:
- * - environment: MEXUS_ENV
+ * - environment: MEXUS_ENV, except in a Railway pull-request environment
+ *   (named like "pr-12"), which copies staging's variables but is a preview
  * - git SHA: MEXUS_GIT_SHA, else Railway's RAILWAY_GIT_COMMIT_SHA
  * - build time: MEXUS_BUILD_TIME, else build-info.json written by
  *   scripts/stamp-build.mjs during the Railway build
@@ -24,9 +25,14 @@ export function readStampFile(path: string): StampFile {
   }
 }
 
+/** Railway names pull-request environments after the PR, e.g. "mexus-app-pr-12". */
+export function isPullRequestEnvironment(railwayEnvironmentName: string | undefined): boolean {
+  return /(^|-)pr-\d+$/.test(railwayEnvironmentName ?? "");
+}
+
 export function readBuildInfo(env: NodeJS.ProcessEnv = process.env, stamp: StampFile = {}): BuildInfo {
   return {
-    environment: env.MEXUS_ENV || "local",
+    environment: isPullRequestEnvironment(env.RAILWAY_ENVIRONMENT_NAME) ? "preview" : env.MEXUS_ENV || "local",
     gitSha: env.MEXUS_GIT_SHA || env.RAILWAY_GIT_COMMIT_SHA || stamp.gitSha || "unknown",
     buildTime: env.MEXUS_BUILD_TIME || stamp.buildTime || "unknown",
   };

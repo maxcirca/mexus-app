@@ -1,0 +1,19 @@
+{
+  "name": "@mexus/backup",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@clickhouse/client": "^1.25.0",
+    "@mexus/build-info": "workspace:*",
+    "tsx": "^4.23.15"
+  },
+  "devDependencies": {
+    "vitest": "^5.1.0"
+  }
+}
