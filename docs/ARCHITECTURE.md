@@ -227,10 +227,20 @@ As built on Day 3 (2026-11-17), in Railway's Europe region (`europe-west4`):
 
 **Consequences.**
 - Cheap, and one place to look.
-- **Backups are our job**: a nightly `BACKUP … TO S3(…)` to an S3-compatible
-  bucket (e.g. Cloudflare R2), plus a tested restore.
-- Grafana (later) reaches ClickHouse either over Railway's private network
-  (Grafana on Railway) or via a read-only user exposed through TCP proxy.
+- **Backups are our job** (built Day 5): the `backup` cron service
+  (`apps/backup`, 02:17 UTC nightly) runs `BACKUP DATABASE … TO S3(…)` into
+  the R2 bucket `mexus-backups` (EU jurisdiction) under
+  `<environment>/<timestamp>`, then restores it into a scratch database,
+  compares every table's row count and drops the scratch copy. Every night's
+  backup is therefore also a tested restore. Previews skip it.
+- **Read-only access from outside** (built Day 5): the API creates the
+  ClickHouse user `mexus_readonly` (SELECT on the app database, `readonly = 2`)
+  at start-up from `MEXUS_READONLY_PASSWORD`. The `db-gate` service
+  (`apps/db-gate`) is the only public way to ClickHouse: HTTPS on its Railway
+  domain, passing only requests that log in as `mexus_readonly`, and blocking
+  an address after 10 failed logins in 15 minutes. The admin login is never
+  usable from outside Railway. Not a TCP proxy, which would have sent
+  passwords unencrypted. TablePlus and a future Grafana use it.
 - Switching to ClickHouse Cloud later is a data copy and a connection string;
   nothing in the design depends on self-hosting.
 
@@ -292,7 +302,15 @@ to add or switch environments later, each at its own URL.
 | Database | own ClickHouse, test data | own ClickHouse | own ClickHouse, backed up nightly |
 
 - Each is a **Railway environment** in one Railway project, with the same
-  services (`clickhouse`, `api`, `web`).
+  services (`clickhouse`, `api`, `web`, `db-gate`, `backup`). Previews are
+  Railway's PR environments, copied from staging; the code recognises them
+  by Railway's environment name (`…pr-<n>`) and calls them "preview",
+  because the copied `MEXUS_ENV` still says staging. Service-to-service URLs
+  are Railway references (`https://${{api.RAILWAY_PUBLIC_DOMAIN}}`), so each
+  copy talks to its own services.
+- **Android previews:** pull requests build the "Mexus Preview" app (build
+  profile `preview`) and publish their updates to the EAS branch `pr-<n>`;
+  the `preview` channel is pointed at the latest pull request's branch.
 - **Everything environment-specific is configuration, never code**: URLs,
   database credentials, the environment name, API tokens live in Railway
   environment variables, GitHub environment secrets and EAS environment
