@@ -16,6 +16,8 @@ async function main() {
     username: process.env.CLICKHOUSE_USER,
     password: process.env.CLICKHOUSE_PASSWORD,
     request_timeout: 30 * 60 * 1000,
+    // Keeps the connection alive through long backups (progress headers).
+    clickhouse_settings: { send_progress_in_http_headers: 1, http_headers_progress_interval_ms: "10000" },
   });
   const db: Database = {
     run: async (sql) => {
