@@ -1,6 +1,6 @@
 import { createClient } from "@clickhouse/client";
 import { currentBuildInfo } from "@mexus/build-info";
-import { backupAndVerify, type Database, r2FromEnv } from "./backup.ts";
+import { backupAndVerify, type Database, describeR2, r2FromEnv } from "./backup.ts";
 
 const build = currentBuildInfo();
 const database = process.env.CLICKHOUSE_DB || "mexus";
@@ -11,6 +11,7 @@ async function main() {
     return;
   }
   const r2 = r2FromEnv(process.env);
+  console.log(describeR2(r2));
   const client = createClient({
     url: process.env.CLICKHOUSE_URL,
     username: process.env.CLICKHOUSE_USER,

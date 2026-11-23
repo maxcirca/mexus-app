@@ -33,6 +33,17 @@ export function r2FromEnv(env: NodeJS.ProcessEnv): R2Config {
   return { ...config, endpoint: config.endpoint.replace(/\/$/, "") };
 }
 
+/**
+ * Safe clues for a failed login to R2, without revealing the keys: the
+ * endpoint's host, whether it is the EU one, and the keys' lengths (R2's S3
+ * keys are 32 and 64 characters; a Cloudflare API token is 40).
+ */
+export function describeR2(r2: R2Config): string {
+  const host = new URL(r2.endpoint).host;
+  const eu = host.includes(".eu.") ? "EU endpoint" : "NOT the EU endpoint";
+  return `R2: ${host} (${eu}), bucket ${r2.bucket}, access key ${r2.accessKeyId.length} characters (expected 32), secret ${r2.secretAccessKey.length} characters (expected 64)`;
+}
+
 /** e.g. "staging/2026-11-19T0217Z": sorts by time, one folder per environment. */
 export function backupPath(environment: string, now: Date): string {
   if (!/^[a-z]+$/.test(environment)) throw new Error(`Unexpected environment name: ${environment}`);

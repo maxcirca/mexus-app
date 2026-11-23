@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { backupAndVerify, backupPath, type Database, r2FromEnv } from "./backup.ts";
+import { backupAndVerify, backupPath, type Database, describeR2, r2FromEnv } from "./backup.ts";
 
 const env = {
   R2_ENDPOINT: "https://abc123.eu.r2.cloudflarestorage.com",
@@ -48,5 +48,15 @@ describe("backup", () => {
     expect(() => r2FromEnv({ ...env, R2_SECRET_ACCESS_KEY: "x', 'y" })).toThrow();
     expect(() => r2FromEnv({ ...env, R2_ENDPOINT: "https://evil.com/'),('x" })).toThrow();
     expect(() => r2FromEnv({ ...env, R2_BUCKET: undefined })).toThrow("R2_BUCKET");
+  });
+
+  it("describes the R2 settings without revealing the keys", () => {
+    const text = describeR2(r2);
+    expect(text).toContain("abc123.eu.r2.cloudflarestorage.com (EU endpoint)");
+    expect(text).toContain("access key 32 characters");
+    expect(text).toContain("secret 64 characters");
+    expect(text).not.toContain(env.R2_ACCESS_KEY_ID);
+    expect(text).not.toContain(env.R2_SECRET_ACCESS_KEY);
+    expect(describeR2({ ...r2, endpoint: "https://abc123.r2.cloudflarestorage.com" })).toContain("NOT the EU endpoint");
   });
 });
